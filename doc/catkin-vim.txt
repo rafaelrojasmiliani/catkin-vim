@@ -1,0 +1,19 @@
+*catkin-vim*
+
+===============================================================================
+catkin-vim                                *catkin-vim.txt*
+
+DESCRIPTION
+
+    A brief description of the plugin.
+
+INSTALLATION
+
+    Instructions on how to install the plugin.
+
+USAGE
+
+    Instructions on how to use the plugin.
+
+===============================================================================
+vim:tw=78:ts=8:noet:ft=help:norl:
