@@ -35,7 +35,7 @@ function! s:ShowPackageSelectionPopup()
         \ 'minwidth': 40,
         \ 'minheight': len(l:lines),
         \ 'cursorline': 0,
-        \ 'filter': function('s:popup_filter_func', [s:ctx]),
+        \ 'filter': function('s:select_packages_menu_filter', [s:ctx]),
         \ 'border': [],
         \ 'mapping': 0,
         \ }
@@ -57,7 +57,7 @@ function! s:ShowPackageSelectionPopup()
   nnoremap <buffer><silent> q :call popup_close(s:popup_id)<CR>
 endfunction
 
-function! s:popup_menu_update(wid, ctx) abort
+function! s:select_packages_menu_update(wid, ctx) abort
   let l:buf = winbufnr(a:wid)
   let l:menu = copy(a:ctx.menu)
 
@@ -75,10 +75,10 @@ endfunction
 
 
 " Filter function for handling input in the popup window
-function! s:popup_filter_func(ctx, id, key)
+function! s:select_packages_menu_filter(ctx, id, key)
   if a:key == "\<CR>" || a:key == " "
     let a:ctx.selected_packages[a:ctx.select] = !a:ctx.selected_packages[a:ctx.select]
-    call s:popup_menu_update(s:wid, a:ctx)
+    call s:select_packages_menu_update(s:wid, a:ctx)
     return 1
   elseif a:key == "q" || a:key == "\x1b"
     let l:selected_packages = filter(copy(a:ctx.packages), {i, _ -> a:ctx.selected_packages[i]})
@@ -89,17 +89,64 @@ function! s:popup_filter_func(ctx, id, key)
     return 1
   elseif a:key == "j"
     let a:ctx.select += a:ctx.select ==# len(a:ctx.menu)-1 ? 0 : 1
-    call s:popup_menu_update(s:wid, a:ctx)
+    call s:select_packages_menu_update(s:wid, a:ctx)
     return 1
   elseif a:key == "k"
     let a:ctx.select -= a:ctx.select ==# 0 ? 0 : 1
-    call s:popup_menu_update(s:wid, a:ctx)
+    call s:select_packages_menu_update(s:wid, a:ctx)
     return 1
   endif
   return 0
 endfunction
 
 
+function! s:CatkinCCMake()
+  " Get the list of packages in the ROS workspace
+  let l:packages = systemlist("catkin list -u --quiet")
+
+  " Check if any packages were found
+  if empty(l:packages)
+    echo "No packages found in the workspace."
+    return
+  endif
+  let l:lines = []
+  for l:pkg in l:packages
+    call add(l:lines,  l:pkg)
+  endfor
+
+  let l:ctx = {'select': 0,  'packages': l:packages}
+  let l:popup_options = {
+        \ 'title': 'Select Package',
+        \ 'minwidth': 40,
+        \ 'filter': 'popup_filter_menu',
+        \ 'border': [],
+        \ 'mapping': 0,
+        \ 'callback': function('s:select_package_callback', [l:ctx]),
+        \ }
+
+	call popup_menu(l:lines, l:popup_options)
+
+  nnoremap <buffer><silent> q :call popup_close(s:popup_id)<CR>
+
+
+endfunction
+
+function! s:select_package_callback(ctx, id, result)
+    if a:result == -1
+        return
+    endif
+   let a:ctx.select = a:result
+   let l:pkg =  a:ctx.packages[a:result - 1]
+   let l:pkg_path = system('catkin locate -q -e ' . l:pkg)
+
+    if v:shell_error == 0
+        let l:cmd =  "terminal ++close ccmake -B build/" . l:pkg . " -S " . l:pkg_path
+        exec l:cmd
+    else
+      echo "Failed to locate package " . l:pkg
+    endif
+  return 0
+endfunction
 " Function to compile selected packages
 function! s:CompileSelectedPackages()
   " Ensure there are selected packages
@@ -132,3 +179,4 @@ command! CatkinCompileSelected call s:CompileSelectedPackages()
 command! CatkinInit call s:CatkinInit()
 command! CatkinClean :Dispatch! catkin clean -y
 command! CatkinPurge :Dispatch!  rm -rf build/ logs/ devel/ .catkin_tools/
+command! CatkinCCMake call s:CatkinCCMake()
