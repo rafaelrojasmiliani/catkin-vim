@@ -148,7 +148,7 @@ function! s:select_package_callback(ctx, id, result)
   return 0
 endfunction
 " Function to compile selected packages
-function! s:CompileSelectedPackages()
+function! s:Build()
   " Ensure there are selected packages
 
     let &makeprg="catkin build"
@@ -175,7 +175,7 @@ endfunction
 command! CatkinSelectPackages call s:ShowPackageSelectionPopup()
 
 " Command to compile the selected packages
-command! CatkinCompileSelected call s:CompileSelectedPackages()
+command! CatkinBuild call s:Build()
 command! CatkinInit call s:CatkinInit()
 command! CatkinClean :Dispatch! catkin clean -y
 command! CatkinPurge :Dispatch!  rm -rf build/ logs/ devel/ .catkin_tools/
