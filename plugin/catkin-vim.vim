@@ -151,7 +151,7 @@ endfunction
 function! s:Build()
   " Ensure there are selected packages
 
-    let &makeprg="catkin build"
+    let &makeprg="catkin build --no-status"
 
   " Use dispatch or execute the command to build the selected packages
   execute "Make"
@@ -165,18 +165,28 @@ function! s:CatkinInit() abort
   " If the command succeeds, set the global variable
   if v:shell_error == 0
     let g:is_catkin_workspace = 1
-    let &makeprg="catkin build"
+    let &makeprg="catkin build --no-status"
   else
     let g:is_catkin_workspace = 0
   endif
 endfunction
 
-" Command to open the popup package selection window
-command! CatkinSelectPackages call s:ShowPackageSelectionPopup()
+function! s:CatkinTest()
+  " Ensure there are selected packages
 
-" Command to compile the selected packages
+    let &makeprg="catkin test --no-status"
+
+  " Use dispatch or execute the command to build the selected packages
+  execute "Make"
+
+  let &makeprg="catkin build --no-status"
+
+endfunction
+
+command! CatkinSelectPackages call s:ShowPackageSelectionPopup()
 command! CatkinBuild call s:Build()
 command! CatkinInit call s:CatkinInit()
 command! CatkinClean :Dispatch! catkin clean -y
 command! CatkinPurge :Dispatch!  rm -rf build/ logs/ devel/ .catkin_tools/
 command! CatkinCCMake call s:CatkinCCMake()
+command! CatkinTest call s:CatkinTest()
