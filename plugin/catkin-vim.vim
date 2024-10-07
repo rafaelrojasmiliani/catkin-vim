@@ -151,7 +151,7 @@ endfunction
 function! s:Build()
   " Ensure there are selected packages
 
-    let &makeprg="catkin build --no-status"
+    let &makeprg="catkin build --no-status -v -s"
 
   " Use dispatch or execute the command to build the selected packages
   execute "Make"
@@ -165,7 +165,7 @@ function! s:CatkinInit() abort
   " If the command succeeds, set the global variable
   if v:shell_error == 0
     let g:is_catkin_workspace = 1
-    let &makeprg="catkin build --no-status"
+    let &makeprg="catkin build --no-status -v -s"
   else
     let g:is_catkin_workspace = 0
   endif
@@ -174,12 +174,12 @@ endfunction
 function! s:CatkinTest()
   " Ensure there are selected packages
 
-    let &makeprg="catkin test --no-status"
+    let &makeprg="catkin test --no-status -v -s"
 
   " Use dispatch or execute the command to build the selected packages
   execute "Make"
 
-  let &makeprg="catkin build --no-status"
+  let &makeprg="catkin build --no-status -v -s"
 
 endfunction
 

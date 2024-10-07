@@ -19,4 +19,4 @@ This plugin allows you to easily configure, clean, and build packages in your Ca
 Use your preferred plugin manager:
 
 ```vim
-Plug 'yourusername/vim-catkin-manager'
+Plug 'yourusername/vim-catkin'
